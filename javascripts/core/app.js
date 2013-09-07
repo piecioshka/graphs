@@ -1,24 +1,15 @@
 define([
-    'zepto',
     'underscore',
     'events'
-], function ($, _, Events) {
+], function (_, Events) {
     'use strict';
 
-    function getLayerX(event) {
-        var layerX = event.layerX;
-        if (_.isFunction(event.eventObject)) {
-            layerX = event.eventObject().layerX;
-        }
-        return layerX;
+    function getOffsetX(e) {
+        return e.offsetX || e.eventObject().layerX;
     }
 
-    function getLayerY(event) {
-        var layerY = event.layerY;
-        if (_.isFunction(event.eventObject)) {
-            layerY = event.eventObject().layerY;
-        }
-        return layerY;
+    function getOffsetY(e) {
+        return e.offsetY || e.eventObject().layerY;
     }
     
     var App = {
@@ -49,11 +40,11 @@ define([
         },
         bindDragAndDrop: function () {
             var self = this;
-            var canvas = this.canvas.get(0);
+            var canvas = this.canvas;
 
             function startAction(e) {
                 // Events.log('mousedown', e);
-                self.movableVertex = self._getNearVertex(getLayerX(e), getLayerY(e));
+                self.movableVertex = self._getNearVertex(getOffsetX(e), getOffsetY(e));
                 if (self.movableVertex) {
                     self.isDrag = true;
                 }
@@ -65,8 +56,8 @@ define([
             function moveAction(e) {
                 if (self.isDrag === true) {
                     // Events.log('mousedown', e);
-                    self.movableVertex.x = getLayerX(e);
-                    self.movableVertex.y = getLayerY(e);
+                    self.movableVertex.x = getOffsetX(e);
+                    self.movableVertex.y = getOffsetY(e);
 
                     self.clearViewPort();
                     self.renderPaths();
@@ -114,16 +105,11 @@ define([
             });
         },
         render: function () {
-            this.canvas = $('<canvas>').attr({
-                width: this.AREA_WIDTH,
-                height: this.AREA_HEIGHT
-            });
-            var app = $("#app");
-            app.css({
-                'width': this.AREA_WIDTH,
-                'height': this.AREA_HEIGHT
-            }).html(this.canvas);
-            this.ctx = this.canvas.get(0).getContext('2d');
+            this.canvas = document.createElement('canvas');
+            this.canvas.setAttribute('width', this.AREA_WIDTH + "px");
+            this.canvas.setAttribute('height', this.AREA_HEIGHT + "px");
+            document.getElementById('app').appendChild(this.canvas);
+            this.ctx = this.canvas.getContext('2d');
         },
         clearViewPort: function () {
             this.ctx.clearRect(0, 0, this.AREA_WIDTH, this.AREA_HEIGHT);
